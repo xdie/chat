@@ -1,6 +1,7 @@
 const KEY = 'chatiga';
 const SECRET = 'laconchadetumadre!';
 
+var contador_clientes = '';
 var express = require('express'),
     cookieParser = require('cookie-parser'),
     expressSession = require('express-session'),
@@ -9,7 +10,7 @@ var express = require('express'),
     io = require('socket.io').listen(server),
     cookie = cookieParser(SECRET),
     store = new expressSession.MemoryStore();
-
+var contador_clientes = '';
 // Configurando middlewares de Session y Cookie Express
 app.set('views', __dirname + '/views');
 app.set('view engine', 'ejs');
@@ -19,7 +20,8 @@ app.use(expressSession({
     name: KEY,
     resave: true,
     saveUninitialized: true,
-    store: store
+    store: store,
+    cookie: { maxAge : 300000 } // 5 minutos
 }));
 
 // Compartiendo session valida en Socket.IO
@@ -32,6 +34,7 @@ io.use(function(socket, next) {
                 console.log('Error Cookie desconocida');
                 return next(new Error('Acceso denegado!'));
             } else {
+
                 socket.handshake.session = session;
                 return next();
             }
@@ -40,7 +43,10 @@ io.use(function(socket, next) {
 });
 
 // Pagina principal
-
+app.get("/", function(req, res, next) {
+    res.send('Servidor NodeJS Chat IGA');
+    next();
+});
 app.get("/:name/:filial", function(req, res, next) {
     // Armamos nombre y filial a la session
     console.log(req.params);
@@ -50,7 +56,8 @@ app.get("/:name/:filial", function(req, res, next) {
         res.render('index');
 
     } else {
-        res.send('Estas fuera!!! Intenta mas tarde');
+        res.send('Estas fuera!!! Intenta dentro de 5 minutos. Somos Buenos!<META http-equiv="refresh" content="2;URL=/ban">');
+
     }
 
     next();
@@ -65,20 +72,22 @@ app.get("/ban", function(req, res, next) {
 
 // Iniciamos la conexion socket.io
 io.sockets.on('connection', function(client) {
+
     // Recuperamos session Express
     var session = client.handshake.session;
     var id = client.id;
 
+    contador_clientes++;
     client.on('toServer', function(msg) {
 
-        msge = [session.nome, session.filial, msg, startTime(), id];
+        msge = [session.nome, session.filial, msg, startTime(), id, contador_clientes];
 
         client.emit('toClient', msge);
         client.broadcast.emit('toClient', msge);
     });
 
 });
-
+io.sockets.on('disconnect', function() { contador_clientes--; });
 // Timestamp
 function checkTime(i) {
     return (i < 10) ? "0" + i : i;

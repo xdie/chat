@@ -25,10 +25,11 @@
                 var filial = msg[1];
                 var mensaje = msg[2];
                 var time = msg[3];
+                var contador = msg[5];
 
 
-                var template_local = '<li class="left clearfix" style="margin-bottom: 10px;padding-bottom: 5px;border-bottom: 1px dotted #B3A9A9";><span class="chat-img pull-left"><img src="http://www.imran.com/xyper_images/icon-user-default.png" width="50px" heigth="50px" alt="User Avatar" class="img-circle" /></span><div class="chat-body clearfix"><div class="header"><strong class="primary-font">' + nombre + '</strong> <small class="pull-right text-muted"><span class="glyphicon glyphicon-time"></span>' + time + '</small></div><p>' + mensaje + '</p></div></li>';
-                var template_remoto = '<li class="right clearfix" style="margin-bottom: 10px;padding-bottom: 5px;border-bottom: 1px dotted #B3A9A9";><span class="chat-img pull-right"><img src="http://www.imran.com/xyper_images/icon-user-default.png" width="50px" heigth="50px" alt="User Avatar" class="img-circle" /></span><div class="chat-body clearfix"><div class="header"><small class=" text-muted"><span class="glyphicon glyphicon-time"></span>' + time + '</small><strong class="pull-right primary-font">' + nombre + '</strong></div><p>' + mensaje + '</p></div></li>';
+                var template_local = '<li class="left clearfix" style="margin-bottom: 10px;padding-bottom: 5px;border-bottom: 1px dotted #B3A9A9";><span class="chat-img pull-left"><img src="http://www.imran.com/xyper_images/icon-user-default.png" width="50px" heigth="50px" alt="User Avatar" class="img-circle" style="margin-right: 4px;"/></span><div class="chat-body clearfix"><div class="header"><strong class="primary-font">' + nombre + '</strong> <small class="pull-right text-muted"><span class="glyphicon glyphicon-time"></span>' + time + '</small></div><p>' + mensaje + '</p></div></li>';
+                var template_remoto = '<li class="right clearfix" style="margin-bottom: 10px;padding-bottom: 5px;border-bottom: 1px dotted #B3A9A9";><span class="chat-img pull-right"><img src="http://www.imran.com/xyper_images/icon-user-default.png" width="50px" heigth="50px" alt="User Avatar" class="img-circle" style="margin-left: 4px;" /></span><div class="chat-body clearfix"><div class="header"><small class=" text-muted"><span class="glyphicon glyphicon-time"></span>' + time + '</small><strong class="pull-right primary-font">' + nombre + '</strong></div><p>' + mensaje + '</p></div></li>';
 
                 if (id == '') {
 
@@ -43,7 +44,7 @@
                     }
                     console.log('ya esta definido el clientid' + id);
                 }
-
+                $('#contador').html(" " + contador + " (Conectados)");
                 $('#chat').append(temp);
                 $("#chat-container").animate({
                     scrollTop: $('#chat-container')[0].scrollHeight
@@ -55,11 +56,25 @@
 
                 e.preventDefault();
                 var msg = $('#msg').val();
-                if ($('#msg').val().length < 4) {
-                    alert('Debe contener al menos 4 caracteres. Intentos: ' + ban);
+
+                if ($('#msg').val().length < 2) {
                     ban += 1;
-                    if (ban > 4) {
-                        location.replace('../ban');
+
+                    switch (ban) {
+                        case 1:
+                            notificacion(" El mensaje debe tener al menos 2 caracteres ");
+                            break;
+                        case 2:
+                            notificacion(" No esta permitido el Flood ;) ");
+                            break;
+                        case 3:
+                            notificacion(" La proxima estas fuera! ");
+                            break;
+                        case 4:
+                            notificacion(" Bye Bye! Seras Expulsado! ");
+                            alert(" Listo, estas fuera !");
+                            location.replace('../ban');
+                            break;
                     }
                     return;
                 }
@@ -68,6 +83,12 @@
                 socket.emit('toServer', msg);
 
             });
+
+            function notificacion(msg) {
+                var temp = '<div id="notice" class="alert alert-danger alert-dismissable"><a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a><strong>Info!</strong>' + msg + '</div>';
+                $('#chat-container').append(temp);
+            }
+
         });
     </script>
 </head>
@@ -79,16 +100,17 @@
                 <div class="col-md-5">
                     <div class="panel panel-primary">
                         <div class="panel-heading">
-                            <span class="glyphicon glyphicon-comment"></span> IGA Campus Chat
+
+                            <span class="glyphicon glyphicon-comment"></span> IGA Campus Chat <span id="contador"></span>
                             <div class="btn-group pull-right">
                                 <button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown">
                                     <span class="glyphicon glyphicon-chevron-down"></span>
                                 </button>
                                 <ul class="dropdown-menu slidedown">
-                                    <li><a href="http://www.jquery2dotnet.com"><span class="glyphicon glyphicon-refresh">
+                                    <li><a onclick="javascript:location.reload();"><span class="glyphicon glyphicon-refresh">
                                 </span>Refrescar</a></li>
                                     <li class="divider"></li>
-                                    <li><a href="http://www.jquery2dotnet.com"><span class="glyphicon glyphicon-off"></span>
+                                    <li><a href="http://iga-la.net:2083"><span class="glyphicon glyphicon-off"></span>
                                 Salir</a></li>
                                 </ul>
                             </div>
@@ -99,7 +121,7 @@
 
                             </ul>
                         </div>
-                        <form class="pure-form" id="chatter" autocomplete="off">
+                        <form id="chatter" autocomplete="off">
                             <div class="panel-footer">
                                 <div class="input-group">
                                     <input id="msg" type="text" class="form-control input-sm" placeholder="Mensaje..." />

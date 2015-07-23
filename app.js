@@ -86,8 +86,11 @@ io.sockets.on('connection', function(client) {
         client.broadcast.emit('toClient', msge);
     });
 
+    client.on('disconnect', function () {
+         contador_clientes--;
+    });
 });
-io.sockets.on('disconnect', function() { contador_clientes--; });
+
 // Timestamp
 function checkTime(i) {
     return (i < 10) ? "0" + i : i;

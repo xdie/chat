@@ -55,7 +55,7 @@ app.get("/:name/:filial", function(req, res, next) {
         res.render('index');
 
     } else {
-        res.send('Estas fuera!!! Intenta dentro de 5 minutos. Somos Buenos!<META http-equiv="refresh" content="2;URL=/ban">');
+        res.send('Estas fuera!!! Intenta dentro de 5 minutos. Somos Buenos!<META http-equiv="refresh" content="0;URL=/ban">');
 
     }
 

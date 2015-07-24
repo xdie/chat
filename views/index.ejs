@@ -8,107 +8,118 @@
     <script src="/socket.io/socket.io.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+    <script>
+    $(document).ready(function() {
+        var socket = io('http://192.168.1.189:3000');
+        var id = '';
+        var temp = '';
+        var ban = 0;
+        var flood = 0;
+        socket.on('toClient', function(msg) {
 
+            var nombre = msg[0];
+            var filial = msg[1];
+            var mensaje = msg[2];
+            var time = msg[3];
+            var contador = msg[5];
+
+
+            var template_local = '<li class="left clearfix" style="margin-bottom: 10px;padding-bottom: 5px;border-bottom: 1px dotted #B3A9A9";><span class="chat-img pull-left"><img src="http://www.imran.com/xyper_images/icon-user-default.png" width="50px" heigth="50px" alt="User Avatar" class="img-circle" style="margin-right: 4px;"/></span><div class="chat-body clearfix"><div class="header"><strong class="primary-font">' + nombre + '</strong> <small class="pull-right text-muted"><span class="glyphicon glyphicon-time"></span> ' + time + ' </small></div><p>' + mensaje + '</p></div></li>';
+            var template_remoto = '<li class="right clearfix" style="margin-bottom: 10px;padding-bottom: 5px;border-bottom: 1px dotted #B3A9A9";><span class="chat-img pull-right"><img src="http://www.imran.com/xyper_images/icon-user-default.png" width="50px" heigth="50px" alt="User Avatar" class="img-circle" style="margin-left: 4px;" /></span><div class="chat-body clearfix"><div class="header"><small class=" text-muted"><span class="glyphicon glyphicon-time"></span> ' + time + ' </small><strong class="pull-right primary-font">' + nombre + '</strong></div><p>' + mensaje + '</p></div></li>';
+
+            if (id == '') {
+
+                id = msg[4];
+                temp = template_local;
+            } else {
+                // Aca sabemos si es el mismo client id
+                if (id == msg[4]) {
+                    temp = template_local;
+                } else {
+                    temp = template_remoto;
+                }
+                console.log('ya esta definido el clientid' + id);
+            }
+            $('#contador').html(" " + contador + " (Conectados)");
+            $('#chat').append(temp);
+            $("#chat-container").animate({
+                scrollTop: $('#chat-container')[0].scrollHeight
+            }, 1000);
+        });
+
+
+        $('#chatter').submit(function(e) {
+
+            e.preventDefault();
+            var tmp = $('#msg').val();
+            //    var msg = str.replace(/blue|house|car/gi, function myFunction(x){return x.toUpperCase();});
+            var msg = tmp.replace(/<|>/gi, ' ');
+            var msg = parseE(msg);
+
+
+            if ($('#msg').val().length < 2) {
+                ban += 1;
+
+                switch (ban) {
+                    case 1:
+                        notificacion(" El mensaje debe tener al menos 2 caracteres ");
+                        break;
+                    case 2:
+                        notificacion(" No esta permitido el Flood ");
+                        break;
+                    case 3:
+                        notificacion(" La proxima estas fuera! ");
+                        break;
+                    case 4:
+                        notificacion(" Bye Bye! Seras Expulsado! ");
+                        alert(" Listo, estas fuera !");
+                        location.replace('../ban');
+                        break;
+                }
+                return;
+            }
+
+            // Proteccion de Flood
+            flood = flood + 1;
+
+            $('#msg').val('');
+            if (flood < 7) {
+                socket.emit('toServer', msg);
+            } else {
+                notificacion(" Flood, estas molestando ");
+                ban = 2;
+            }
+        });
+
+        setInterval(function() {
+            flood = 0;
+            $('#notice').fadeOut("slow", function() {
+                $('#notice').detach();
+            });
+        }, 5000);
+
+        setInterval(function() {
+            ban = 0;
+        }, 30000);
+
+        function notificacion(msg) {
+            var temp = '<div id="notice" class="alert alert-danger alert-dismissable"><a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a><strong>Info!</strong>' + msg + '</div>';
+            $('#chat-container').append(temp);
+        }
+
+        function parseE(msg) {
+
+            var msg = msg.replace(/:\)/gi, '<img src="http://4.bp.blogspot.com/-ZgtYQpXq0Yo/UZEDl_PJLhI/AAAAAAAADnk/2pgkDG-nlGs/s1600/facebook-smiley-face-for-comments.png"');
+            var msg = msg.replace(/:D/gi, '<img src="http://2.bp.blogspot.com/-OsnLCK0vg6Y/UZD8pZha0NI/AAAAAAAADnY/sViYKsYof-w/s1600/big-smile-emoticon-for-facebook.png"');
+            var msg = msg.replace(/;\)/gi, '<img src="http://1.bp.blogspot.com/-lX5leyrnSb4/Tv5TjIVEKfI/AAAAAAAAAi0/GR6QxObL5kM/s400/wink%2Bemoticon.png"');
+            return msg;
+        }
+    });
+
+    </script>
     <!--Bootstrap-->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css">
-    <script>
-        $(document).ready(function() {
-            var socket = io('http://192.168.1.189:3000');
-            var id = '';
-            var temp = '';
-            var ban = 0;
-            var flood = 0;
-            socket.on('toClient', function(msg) {
-
-                var nombre = msg[0];
-                var filial = msg[1];
-                var mensaje = msg[2];
-                var time = msg[3];
-                var contador = msg[5];
-
-
-                var template_local = '<li class="left clearfix" style="margin-bottom: 10px;padding-bottom: 5px;border-bottom: 1px dotted #B3A9A9";><span class="chat-img pull-left"><img src="http://www.imran.com/xyper_images/icon-user-default.png" width="50px" heigth="50px" alt="User Avatar" class="img-circle" style="margin-right: 4px;"/></span><div class="chat-body clearfix"><div class="header"><strong class="primary-font">' + nombre + '</strong> <small class="pull-right text-muted"><span class="glyphicon glyphicon-time"></span> ' + time + ' </small></div><p>' + mensaje + '</p></div></li>';
-                var template_remoto = '<li class="right clearfix" style="margin-bottom: 10px;padding-bottom: 5px;border-bottom: 1px dotted #B3A9A9";><span class="chat-img pull-right"><img src="http://www.imran.com/xyper_images/icon-user-default.png" width="50px" heigth="50px" alt="User Avatar" class="img-circle" style="margin-left: 4px;" /></span><div class="chat-body clearfix"><div class="header"><small class=" text-muted"><span class="glyphicon glyphicon-time"></span> ' + time + ' </small><strong class="pull-right primary-font">' + nombre + '</strong></div><p>' + mensaje + '</p></div></li>';
-
-                if (id == '') {
-
-                    id = msg[4];
-                    temp = template_local;
-                } else {
-                    // Aca sabemos si es el mismo client id
-                    if (id == msg[4]) {
-                        temp = template_local;
-                    } else {
-                        temp = template_remoto;
-                    }
-                    console.log('ya esta definido el clientid' + id);
-                }
-                $('#contador').html(" " + contador + " (Conectados)");
-                $('#chat').append(temp);
-                $("#chat-container").animate({
-                    scrollTop: $('#chat-container')[0].scrollHeight
-                }, 1000);
-            });
-
-
-            $('#chatter').submit(function(e) {
-
-                e.preventDefault();
-                var tmp = $('#msg').val();
-            //    var msg = str.replace(/blue|house|car/gi, function myFunction(x){return x.toUpperCase();});
-                var msg = tmp.replace(/<|>/gi,' ');
-                var msg = msg.replace(/:\)/gi,'<img src="http://4.bp.blogspot.com/-ZgtYQpXq0Yo/UZEDl_PJLhI/AAAAAAAADnk/2pgkDG-nlGs/s1600/facebook-smiley-face-for-comments.png"');
-                var msg = msg.replace(/:D/gi,'<img src="http://2.bp.blogspot.com/-OsnLCK0vg6Y/UZD8pZha0NI/AAAAAAAADnY/sViYKsYof-w/s1600/big-smile-emoticon-for-facebook.png"');
-                var msg = msg.replace(/;\)/gi,'<img src="http://1.bp.blogspot.com/-lX5leyrnSb4/Tv5TjIVEKfI/AAAAAAAAAi0/GR6QxObL5kM/s400/wink%2Bemoticon.png"');
-                if ($('#msg').val().length < 2) {
-                    ban += 1;
-
-                    switch (ban) {
-                        case 1:
-                            notificacion(" El mensaje debe tener al menos 2 caracteres ");
-                            break;
-                        case 2:
-                            notificacion(" No esta permitido el Flood ");
-                            break;
-                        case 3:
-                            notificacion(" La proxima estas fuera! ");
-                            break;
-                        case 4:
-                            notificacion(" Bye Bye! Seras Expulsado! ");
-                            alert(" Listo, estas fuera !");
-                            location.replace('../ban');
-                            break;
-                    }
-                    return;
-                }
-                flood = flood + 1;
-                $('#msg').val('');
-                if (flood < 7) {
-                    socket.emit('toServer', msg);
-                } else {
-                    notificacion(" Flood, estas molestando ");
-                    ban = 2;
-                }
-                console.log(flood);
-            });
-            setInterval(function() {
-                flood = 0;
-                $('#notice').fadeOut("slow", function() {
-                    $('#notice').detach();
-                });
-            }, 5000);
-            setInterval(function() {
-                ban = 0;
-            }, 30000);
-
-            function notificacion(msg) {
-                var temp = '<div id="notice" class="alert alert-danger alert-dismissable"><a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a><strong>Info!</strong>' + msg + '</div>';
-                $('#chat-container').append(temp);
-            }
-
-        });
-    </script>
 </head>
 
 <body>

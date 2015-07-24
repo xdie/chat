@@ -18,7 +18,7 @@
             var id = '';
             var temp = '';
             var ban = 0;
-
+            var flood = 0;
             socket.on('toClient', function(msg) {
 
                 var nombre = msg[0];
@@ -28,8 +28,8 @@
                 var contador = msg[5];
 
 
-                var template_local = '<li class="left clearfix" style="margin-bottom: 10px;padding-bottom: 5px;border-bottom: 1px dotted #B3A9A9";><span class="chat-img pull-left"><img src="http://www.imran.com/xyper_images/icon-user-default.png" width="50px" heigth="50px" alt="User Avatar" class="img-circle" style="margin-right: 4px;"/></span><div class="chat-body clearfix"><div class="header"><strong class="primary-font">' + nombre + '</strong> <small class="pull-right text-muted"><span class="glyphicon glyphicon-time"></span>' + time + '</small></div><p>' + mensaje + '</p></div></li>';
-                var template_remoto = '<li class="right clearfix" style="margin-bottom: 10px;padding-bottom: 5px;border-bottom: 1px dotted #B3A9A9";><span class="chat-img pull-right"><img src="http://www.imran.com/xyper_images/icon-user-default.png" width="50px" heigth="50px" alt="User Avatar" class="img-circle" style="margin-left: 4px;" /></span><div class="chat-body clearfix"><div class="header"><small class=" text-muted"><span class="glyphicon glyphicon-time"></span>' + time + '</small><strong class="pull-right primary-font">' + nombre + '</strong></div><p>' + mensaje + '</p></div></li>';
+                var template_local = '<li class="left clearfix" style="margin-bottom: 10px;padding-bottom: 5px;border-bottom: 1px dotted #B3A9A9";><span class="chat-img pull-left"><img src="http://www.imran.com/xyper_images/icon-user-default.png" width="50px" heigth="50px" alt="User Avatar" class="img-circle" style="margin-right: 4px;"/></span><div class="chat-body clearfix"><div class="header"><strong class="primary-font">' + nombre + '</strong> <small class="pull-right text-muted"><span class="glyphicon glyphicon-time"></span> ' + time + ' </small></div><p>' + mensaje + '</p></div></li>';
+                var template_remoto = '<li class="right clearfix" style="margin-bottom: 10px;padding-bottom: 5px;border-bottom: 1px dotted #B3A9A9";><span class="chat-img pull-right"><img src="http://www.imran.com/xyper_images/icon-user-default.png" width="50px" heigth="50px" alt="User Avatar" class="img-circle" style="margin-left: 4px;" /></span><div class="chat-body clearfix"><div class="header"><small class=" text-muted"><span class="glyphicon glyphicon-time"></span> ' + time + ' </small><strong class="pull-right primary-font">' + nombre + '</strong></div><p>' + mensaje + '</p></div></li>';
 
                 if (id == '') {
 
@@ -65,7 +65,7 @@
                             notificacion(" El mensaje debe tener al menos 2 caracteres ");
                             break;
                         case 2:
-                            notificacion(" No esta permitido el Flood ;) ");
+                            notificacion(" No esta permitido el Flood ");
                             break;
                         case 3:
                             notificacion(" La proxima estas fuera! ");
@@ -78,11 +78,25 @@
                     }
                     return;
                 }
-
+                flood = flood + 1;
                 $('#msg').val('');
-                socket.emit('toServer', msg);
-
+                if (flood < 7) {
+                    socket.emit('toServer', msg);
+                } else {
+                    notificacion(" Flood, estas molestando ");
+                    ban = 2;
+                }
+                console.log(flood);
             });
+            setInterval(function() {
+                flood = 0;
+                $('#notice').fadeOut("slow", function() {
+                    $('#notice').detach();
+                });
+            }, 5000);
+            setInterval(function() {
+                ban = 0;
+            }, 30000);
 
             function notificacion(msg) {
                 var temp = '<div id="notice" class="alert alert-danger alert-dismissable"><a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a><strong>Info!</strong>' + msg + '</div>';

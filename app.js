@@ -34,7 +34,6 @@ io.use(function(socket, next) {
                 console.log('Error Cookie desconocida');
                 return next(new Error('Acceso denegado!'));
             } else {
-
                 socket.handshake.session = session;
                 return next();
             }

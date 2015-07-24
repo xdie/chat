@@ -55,8 +55,12 @@
             $('#chatter').submit(function(e) {
 
                 e.preventDefault();
-                var msg = $('#msg').val();
-
+                var tmp = $('#msg').val();
+            //    var msg = str.replace(/blue|house|car/gi, function myFunction(x){return x.toUpperCase();});
+                var msg = tmp.replace(/<|>/gi,' ');
+                var msg = msg.replace(/:\)/gi,'<img src="http://4.bp.blogspot.com/-ZgtYQpXq0Yo/UZEDl_PJLhI/AAAAAAAADnk/2pgkDG-nlGs/s1600/facebook-smiley-face-for-comments.png"');
+                var msg = msg.replace(/:D/gi,'<img src="http://2.bp.blogspot.com/-OsnLCK0vg6Y/UZD8pZha0NI/AAAAAAAADnY/sViYKsYof-w/s1600/big-smile-emoticon-for-facebook.png"');
+                var msg = msg.replace(/;\)/gi,'<img src="http://1.bp.blogspot.com/-lX5leyrnSb4/Tv5TjIVEKfI/AAAAAAAAAi0/GR6QxObL5kM/s400/wink%2Bemoticon.png"');
                 if ($('#msg').val().length < 2) {
                     ban += 1;
 
